@@ -14,7 +14,7 @@ rm -f cloud-proxy-admin-*.deb
 
 # download cloud proxy admin ui
 MAJOR="4.0.0"
-MINOR="8BE5"
+MINOR="D8EA"
 
 # download
 wget https://packages.diladele.com/cloud-proxy-admin/$MAJOR.$MINOR/amd64/release/ubuntu20/cloud-proxy-admin-$MAJOR.${MINOR}_amd64.deb
