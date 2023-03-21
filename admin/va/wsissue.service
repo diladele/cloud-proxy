@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/websafety/bin/va_issue.sh
+ExecStart=/opt/cloud-proxy-admin/bin/va_issue.sh
 StandardOutput=file:/etc/issue
 RemainAfterExit=true
 

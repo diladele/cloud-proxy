@@ -13,10 +13,10 @@ if [[ $EUID -ne 0 ]]; then
 fi
 
 # copy the /etc/issue creation script to installation folder
-cp va_issue.sh /opt/websafety/bin/
+cp va_issue.sh /opt/cloud-proxy-admin/bin/
 
 # make script executable
-chmod +x /opt/websafety/bin/va_issue.sh
+chmod +x /opt/cloud-proxy-admin/bin/va_issue.sh
 
 # create systemd service that runs everytime network is restarted to 
 # update the /etc/issue login banner
