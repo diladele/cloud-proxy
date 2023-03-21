@@ -33,3 +33,6 @@ systemctl restart apache2
 
 # and start the reatime traffic reporting
 systemctl start cloud-proxy-traffic-realtime
+
+# remove old packages just in case
+apt -y autoremove
