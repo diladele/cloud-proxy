@@ -18,6 +18,10 @@ sudo -u proxy /opt/cloud-proxy-admin/env/bin/pip install \
    cryptography==39        \
    pandas==1.4.2
 
+# apply configuration once to generate config for the example project
+sudo -u proxy /opt/cloud-proxy-admin/env/bin/python \
+   /opt/cloud-proxy-admin/app/apply.py
+
 # enable apache module
 a2enmod ssl
 
