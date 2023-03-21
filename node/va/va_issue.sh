@@ -17,7 +17,7 @@ OSINFO_DIST=${OSINFO_TMP2#NAME=}
 OSINFO_DIST=${OSINFO_DIST#\"}
 OSINFO_DIST=${OSINFO_DIST%\"}
 
-echo "Welcome to Cloud Proxy virtual appliance!"
+echo "Welcome to Cloud Proxy Node virtual appliance!"
 echo 
 echo "Operating System    $OSINFO_DIST, $OSINFO_NAME"
 echo "System Kernel       \\r"
@@ -30,7 +30,7 @@ echo "Appliance Version   $VA_VER"
 echo "Squid Version       $SQUID_VER"
 echo "System Username     root (can only login in console, ssh network login is disabled)"
 echo "System Password     Passw0rd (or whatever you set it to when creating this appliance)"
-echo "Installation Dir    /opt/websafety"
+echo "Installation Dir    /opt/websafety and /opt/cloud-proxy-sync"
 echo 
 if [ -f /etc/centos-release ] || [ -f /etc/redhat-release ]
 then
@@ -39,7 +39,7 @@ then
     echo 
     echo "Admin UI is available at http://\\4:80"
 else
-    echo "To use this Cloud Proxy - adjust your browser proxy settings to point"
+    echo "To use this Cloud Proxy Node - adjust your browser proxy settings to point"
     echo "to the IP address or domain name of this machine \\4, port 3128 and browse the web."
     echo 
     echo "Integrate it with Cloud Proxy Admin UI as described on https://cloudproxy.diladele.com"
