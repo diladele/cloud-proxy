@@ -14,6 +14,26 @@ if [ -f license.pem ]; then
     sudo -u proxy cp license.pem /opt/websafety/etc/license.pem
 fi
 
+#
+# should we move it into cloud-proxy-sync DEB package??
+#
+
+# copy the /etc/issue creation script to installation folder
+cp va_issue.sh /opt/websafety/bin/
+
+# make script executable
+chmod +x /opt/websafety/bin/va_issue.sh
+
+#  create systemd service that runs everytime network is restarted to update the /etc/issue login banner
+cp wsissue.service /etc/systemd/system/wsissue.service
+
+# enable it
+systemctl enable wsissue.service
+
+#
+# adjust vmware 
+#
+
 # install vm tools (only if vmware is detected)
 dmidecode -s system-product-name | grep -i "vmware" > /dev/null
 if [ $? -eq 0 ]; then
