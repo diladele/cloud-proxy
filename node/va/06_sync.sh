@@ -34,3 +34,11 @@ chown -R proxy:proxy /opt/cloud-proxy-sync
 # to let the proxy user to read logs add him to the groups too
 usermod -a -G adm proxy 
 usermod -a -G clamav proxy
+
+# remove old packages just in case
+apt -y autoremove
+
+# set new license
+if [ -f license.pem ]; then
+    sudo -u proxy cp license.pem /opt/websafety/etc/license.pem
+fi

@@ -1,22 +1,16 @@
 #!/bin/bash
 
+#
+# this script is used to prepare virtual appliances of Cloud Proxy for 
+# VMware ESXi/vSphere and Microsoft Hyper-V - it should NOT be run when
+# preparing images for Microsoft Azure and Amazon AWS
+#
+
 # all packages are installed as root
 if [[ $EUID -ne 0 ]]; then
    echo "This script must be run as root" 1>&2
    exit 1
 fi
-
-# remove old packages
-apt -y autoremove
-
-# set new license
-if [ -f license.pem ]; then
-    sudo -u proxy cp license.pem /opt/websafety/etc/license.pem
-fi
-
-#
-# should we move it into cloud-proxy-sync DEB package??
-#
 
 # copy the /etc/issue creation script to installation folder
 cp va_issue.sh /opt/websafety/bin/
@@ -24,19 +18,19 @@ cp va_issue.sh /opt/websafety/bin/
 # make script executable
 chmod +x /opt/websafety/bin/va_issue.sh
 
-#  create systemd service that runs everytime network is restarted to update the /etc/issue login banner
+# create systemd service that runs everytime network is restarted to 
+# update the /etc/issue login banner
 cp wsissue.service /etc/systemd/system/wsissue.service
 
 # enable it
 systemctl enable wsissue.service
 
 #
-# adjust vmware 
+# adjust vmware tools
 #
-
-# install vm tools (only if vmware is detected)
 dmidecode -s system-product-name | grep -i "vmware" > /dev/null
 if [ $? -eq 0 ]; then
+    
     echo "Detected VMware, installing open-vm-tools..."
     apt update > /dev/null
     apt install -y open-vm-tools
