@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: websafety-ui
+  name: cloud-proxy-ui
 spec:
-  type: LoadBalancer
+  type: NodePort
   selector:
-    app: websafety-ui
+    app: cloud-proxy-ui
   ports:
     - protocol: TCP
       port: 80

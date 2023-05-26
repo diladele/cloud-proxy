@@ -1,18 +1,19 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: websafety-ui
+  name: cloud-proxy-ui
   namespace: default
 rules:
 - apiGroups: 
     - ""
     - "apps"
   resources: 
-    - deployments
     - configmaps
-    - secrets
+    - deployments
     - pods
     - pods/log  
+    - secrets
+    - services
   verbs:
     - create
     - get
@@ -23,7 +24,7 @@ rules:
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: websafety-ui
+  name: cloud-proxy-ui
   namespace: default
 subjects:
 - kind: ServiceAccount
@@ -31,5 +32,5 @@ subjects:
   namespace: default
 roleRef:
   kind: ClusterRole
-  name: websafety-ui
+  name: cloud-proxy-ui
   apiGroup: rbac.authorization.k8s.io

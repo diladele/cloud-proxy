@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: websafety-ui
+  name: cloud-proxy-ui
 spec:
   
   # currently we only support having one replica, so please do NOT change it
   replicas: 1
   selector:
     matchLabels:
-      app: websafety-ui
+      app: cloud-proxy-ui
   
   template:
     
     metadata:
-      name: websafety-ui
+      name: cloud-proxy-ui
       labels:
-        app: websafety-ui
+        app: cloud-proxy-ui
     
     spec:
       # updater will signal individual containers to reload/restart thus we need to share process namespace
@@ -118,7 +118,8 @@ spec:
       volumes:
         # these empty volumes will be initialized by the init container upon startup
         - name: ui-db
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: cloud-proxy-ui-var-db-claim          
       #  - name: websafety-etc
       #    emptyDir: {}
           #nfs:
