@@ -8,6 +8,7 @@ rules:
     - ""
     - "apps"
   resources: 
+    - namespaces
     - configmaps
     - deployments
     - pods
@@ -19,6 +20,7 @@ rules:
     - get
     - list
     - patch
+    - delete
 
 ---
 kind: ClusterRoleBinding
