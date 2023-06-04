@@ -1,0 +1,147 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cloud-proxy-ui
+spec:
+  
+  # currently we only support having one replica, so please do NOT change it
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cloud-proxy-ui
+  
+  template:
+    
+    metadata:
+      name: cloud-proxy-ui
+      labels:
+        app: cloud-proxy-ui
+    
+    spec:
+      # updater will signal individual containers to reload/restart thus we need to share process namespace
+      # shareProcessNamespace: true
+      
+      containers:
+
+      # nginx container
+      - name: nginx
+        image: diladele/websafety-k8s:nginx86
+        imagePullPolicy: Always
+        env:
+        - name: DILADELE_WEBSAFETY_HISTORY_DELAY_NOT_USED
+          value: "60" # run history every minute for debug now
+        #volumeMounts:
+        #- name: websafety-ui-etc
+        #  mountPath: /opt/websafety-ui/etc
+        #  readOnly: true
+        #- name: websafety-ui-stats
+        #  mountPath: /opt/websafety-ui/var/stats
+        #- name: websafety-ui-reports
+        #  mountPath: /opt/websafety-ui/var/reports
+        #- name: websafety-ui-log
+        #  mountPath: /opt/websafety-ui/var/log
+        #- name: squid-log
+        #  mountPath: /var/log/squid
+        #  readOnly: true
+        #- name: websafety-log
+        #  mountPath: /opt/websafety/var/log
+      
+      # ui container
+      - name: ui
+        image: diladele/websafety-k8s:ui86
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+        env:
+        - name: WEBSAFETY_DEPLOYMENT_STYLE
+          value: k8s
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        volumeMounts:
+        #- name: websafety-etc
+        #  mountPath: /opt/websafety/etc
+        #- name: websafety-log
+        #  mountPath: /opt/websafety/var/log
+        #- name: websafety-spool
+        #  mountPath: /opt/websafety/var/spool
+        #- name: squid-spool
+        #  mountPath: /var/spool/squid
+        #- name: squid-etc
+        #  mountPath: /etc/squid
+        #  readOnly: true
+        #- name: squid-log
+        #  mountPath: /var/log/squid
+        #  readOnly: true
+        #- name: websafety-ui-stats
+        #  mountPath: /opt/websafety-ui/var/stats
+        #  readOnly: true
+        #- name: websafety-ui-reports
+        #  mountPath: /opt/websafety-ui/var/reports
+        #  readOnly: true
+        #- name: websafety-ui-log
+        #  mountPath: /opt/websafety-ui/var/log
+        #  readOnly: true
+        - name: ui-db
+          mountPath: /opt/cloud-proxy/var/db
+        readinessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 15
+
+      initContainers:      
+      - name: init
+        image: diladele/websafety-k8s:uiinit86
+        imagePullPolicy: Always
+        volumeMounts:
+        #- name: websafety-init
+        #  mountPath: "/websafety-init"
+        #  readOnly: true        
+        - name: ui-db
+          mountPath: /opt/cloud-proxy/var/db          
+      #  - name: websafety-secret
+      #    mountPath: /opt/websafety/secret
+      #  - name: websafety-spool
+      #    mountPath: /opt/websafety/var/spool
+        
+      volumes:
+        # these empty volumes will be initialized by the init container upon startup
+        - name: ui-db
+          persistentVolumeClaim:
+            claimName: cloud-proxy-ui-var-db-claim          
+      #  - name: websafety-etc
+      #    emptyDir: {}
+          #nfs:
+          #  server: k8s-lb70.diladele.lan
+          #  path: /data/websafety/etc
+          #  readOnly: no        
+      #  - name: squid-log
+      #    emptyDir: {}
+          
+      # this is a config map volume containing default values for init contailer
+      #  - name: websafety-init
+      #    configMap:
+      #      name: websafety-proxy
+
+        # this is a secret volume        
+        #- name: websafety-secret
+        #  secret:
+        #    secretName: websafety-proxy
+        #    items:
+        #      - key: license.pem
+        #        path: license.pem
+        #      - key: myca.pem
+        #        path: myca.pem
+        #      - key: myca.der
+        #        path: myca.der
