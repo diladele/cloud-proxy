@@ -25,7 +25,7 @@ spec:
 
       # nginx container
       - name: nginx
-        image: diladele/cloud-proxy:nginx50
+        image: diladele/cloud-proxy:nginx51
         imagePullPolicy: Always
         env:
         - name: DILADELE_WEBSAFETY_HISTORY_DELAY_NOT_USED
@@ -48,7 +48,7 @@ spec:
       
       # ui container
       - name: ui
-        image: diladele/cloud-proxy:ui50
+        image: diladele/cloud-proxy:ui51
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -102,7 +102,7 @@ spec:
 
       initContainers:      
       - name: init
-        image: diladele/cloud-proxy:uiinit50
+        image: diladele/cloud-proxy:uiinit51
         imagePullPolicy: Always
         volumeMounts:
         #- name: websafety-init
