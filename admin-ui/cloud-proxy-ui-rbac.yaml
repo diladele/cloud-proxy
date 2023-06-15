@@ -15,6 +15,7 @@ rules:
     - pods/log  
     - secrets
     - services
+    - persistentvolumeclaims
   verbs:
     - create
     - get
