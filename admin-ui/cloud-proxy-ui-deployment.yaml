@@ -5,7 +5,12 @@ metadata:
 spec:
   
   # currently we only support having one replica, so please do NOT change it
+  # note the strategy is set to recreate meaning old instance is stopped
+  # persistent volume is deattached and new instance is started - this is exactly
+  # what we require
   replicas: 1
+  strategy:
+    type: Recreate
   selector:
     matchLabels:
       app: cloud-proxy-ui
@@ -18,8 +23,6 @@ spec:
         app: cloud-proxy-ui
     
     spec:
-      # updater will signal individual containers to reload/restart thus we need to share process namespace
-      # shareProcessNamespace: true
       
       containers:
 
@@ -30,21 +33,6 @@ spec:
         env:
         - name: DILADELE_WEBSAFETY_HISTORY_DELAY_NOT_USED
           value: "60" # run history every minute for debug now
-        #volumeMounts:
-        #- name: websafety-ui-etc
-        #  mountPath: /opt/websafety-ui/etc
-        #  readOnly: true
-        #- name: websafety-ui-stats
-        #  mountPath: /opt/websafety-ui/var/stats
-        #- name: websafety-ui-reports
-        #  mountPath: /opt/websafety-ui/var/reports
-        #- name: websafety-ui-log
-        #  mountPath: /opt/websafety-ui/var/log
-        #- name: squid-log
-        #  mountPath: /var/log/squid
-        #  readOnly: true
-        #- name: websafety-log
-        #  mountPath: /opt/websafety/var/log
       
       # ui container
       - name: ui
@@ -53,8 +41,6 @@ spec:
         ports:
         - containerPort: 8000
         env:
-        - name: WEBSAFETY_DEPLOYMENT_STYLE
-          value: k8s
         - name: POD_NAME
           valueFrom:
             fieldRef:
@@ -64,31 +50,8 @@ spec:
             fieldRef:
               fieldPath: metadata.namespace
         volumeMounts:
-        #- name: websafety-etc
-        #  mountPath: /opt/websafety/etc
-        #- name: websafety-log
-        #  mountPath: /opt/websafety/var/log
-        #- name: websafety-spool
-        #  mountPath: /opt/websafety/var/spool
-        #- name: squid-spool
-        #  mountPath: /var/spool/squid
-        #- name: squid-etc
-        #  mountPath: /etc/squid
-        #  readOnly: true
-        #- name: squid-log
-        #  mountPath: /var/log/squid
-        #  readOnly: true
-        #- name: websafety-ui-stats
-        #  mountPath: /opt/websafety-ui/var/stats
-        #  readOnly: true
-        #- name: websafety-ui-reports
-        #  mountPath: /opt/websafety-ui/var/reports
-        #  readOnly: true
-        #- name: websafety-ui-log
-        #  mountPath: /opt/websafety-ui/var/log
-        #  readOnly: true
-        - name: ui-db
-          mountPath: /opt/cloud-proxy/var/db
+        - name: cloud-proxy-ui-volume
+          mountPath: /opt/cloud-proxy/var
         readinessProbe:
           tcpSocket:
             port: 8000
@@ -100,48 +63,62 @@ spec:
           initialDelaySeconds: 15
           periodSeconds: 15
 
+      # logd rsync server container
+      - name: logd
+        image: diladele/cloud-proxy-5.1:logd
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 873
+        env:
+        - name: DILADELE_WEBSAFETY_HISTORY_DELAY_NOT_USED
+          value: "60" # run history every minute for debug now
+        volumeMounts:
+        - name: cloud-proxy-ui-volume
+          mountPath: /opt/cloud-proxy/var
+        readinessProbe:
+          tcpSocket:
+            port: 873
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        livenessProbe:
+          tcpSocket:
+            port: 873
+          initialDelaySeconds: 15
+          periodSeconds: 15
+
+      # realtime container
+      - name: realtime
+        image: diladele/cloud-proxy-5.1:reports
+        imagePullPolicy: Always
+        env:
+        - name: DILADELE_CLOUDPROXY_REPORTS_REALTIME
+          value: "True"
+        - name: DILADELE_CLOUDPROXY_REPORTS_DELAY
+          value: "15" # runs every 15 seconds        
+        volumeMounts:
+        - name: cloud-proxy-ui-volume
+          mountPath: /opt/cloud-proxy/var
+
+      # history container
+      - name: history
+        image: diladele/cloud-proxy-5.1:reports
+        imagePullPolicy: Always
+        env:
+        - name: DILADELE_CLOUDPROXY_REPORTS_DELAY
+          value: "3600" # runs every 3600 seconds / 1 hour
+        volumeMounts:
+        - name: cloud-proxy-ui-volume
+          mountPath: /opt/cloud-proxy/var
+
       initContainers:      
       - name: init
         image: diladele/cloud-proxy-5.1:uiinit
         imagePullPolicy: Always
         volumeMounts:
-        #- name: websafety-init
-        #  mountPath: "/websafety-init"
-        #  readOnly: true        
-        - name: ui-db
-          mountPath: /opt/cloud-proxy/var/db          
-      #  - name: websafety-secret
-      #    mountPath: /opt/websafety/secret
-      #  - name: websafety-spool
-      #    mountPath: /opt/websafety/var/spool
+        - name: cloud-proxy-ui-volume
+          mountPath: /opt/cloud-proxy/var
         
       volumes:
-        # these empty volumes will be initialized by the init container upon startup
-        - name: ui-db
+        - name: cloud-proxy-ui-volume
           persistentVolumeClaim:
-            claimName: cloud-proxy-ui-var-db-claim          
-      #  - name: websafety-etc
-      #    emptyDir: {}
-          #nfs:
-          #  server: k8s-lb70.diladele.lan
-          #  path: /data/websafety/etc
-          #  readOnly: no        
-      #  - name: squid-log
-      #    emptyDir: {}
-          
-      # this is a config map volume containing default values for init contailer
-      #  - name: websafety-init
-      #    configMap:
-      #      name: websafety-proxy
-
-        # this is a secret volume        
-        #- name: websafety-secret
-        #  secret:
-        #    secretName: websafety-proxy
-        #    items:
-        #      - key: license.pem
-        #        path: license.pem
-        #      - key: myca.pem
-        #        path: myca.pem
-        #      - key: myca.der
-        #        path: myca.der
+            claimName: cloud-proxy-ui
