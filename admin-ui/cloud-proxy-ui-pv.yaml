@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: cloud-proxy-ui
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  nfs:
+    server: k8s-lb70.diladele.lan
+    path: /data/cloud-proxy-ui
+    readOnly: no
