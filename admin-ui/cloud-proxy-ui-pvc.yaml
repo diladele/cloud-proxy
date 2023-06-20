@@ -8,4 +8,4 @@ spec:
       storage: 10Gi
   accessModes:
     - ReadWriteOnce
-  storageClassName: "" # for AKS this line must be commented out
+  # storageClassName: "" # for AKS this line must be commented out
