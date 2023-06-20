@@ -9,5 +9,3 @@ spec:
   ports:
     - port: 80
       targetPort: 80
-  loadBalancerSourceRanges:
-    - 82.172.135.168/32
