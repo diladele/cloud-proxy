@@ -13,3 +13,18 @@ spec:
       name: http
   selector:
     {{- include "cloud-proxy.selectorLabels" . | nindent 4 }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cloud-proxy.fullname" . }}-reports
+  labels:
+    {{- include "cloud-proxy.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  ports:
+    - port: 873
+      targetPort: 873
+      protocol: TCP
+  selector:
+    {{- include "cloud-proxy.selectorLabels" . | nindent 4 }}

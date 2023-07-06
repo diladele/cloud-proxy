@@ -7,6 +7,8 @@ metadata:
 spec:
   {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
   {{- end }}
   selector:
     matchLabels:
@@ -28,10 +30,12 @@ spec:
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
-        - name: {{ .Chart.Name }}
+
+        # nginx container
+        - name: nginx
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}/{{.Chart.Name}}-{{.Chart.AppVersion}}:nginx"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -47,6 +51,96 @@ spec:
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
+
+        # ui container
+        - name: ui
+          image: "{{ .Values.image.repository }}/{{.Chart.Name}}-{{.Chart.AppVersion}}:ui"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          - containerPort: 8000
+          env:
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_NAMESPACE
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.namespace
+          volumeMounts:
+          - name: cloud-proxy-ui-volume
+            mountPath: /opt/cloud-proxy/var
+          readinessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 15
+
+        # logd rsync server container
+        - name: logd
+          image: "{{ .Values.image.repository }}/{{.Chart.Name}}-{{.Chart.AppVersion}}:logd"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+          - containerPort: 873
+          env:
+          - name: DILADELE_WEBSAFETY_HISTORY_DELAY_NOT_USED
+            value: "60" # run history every minute for debug now
+          volumeMounts:
+          - name: cloud-proxy-ui-volume
+            mountPath: /opt/cloud-proxy/var
+          readinessProbe:
+            tcpSocket:
+              port: 873
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          livenessProbe:
+            tcpSocket:
+              port: 873
+            initialDelaySeconds: 15
+            periodSeconds: 15
+
+        # realtime container
+        - name: realtime
+          image: "{{ .Values.image.repository }}/{{.Chart.Name}}-{{.Chart.AppVersion}}:reports"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: DILADELE_CLOUDPROXY_REPORTS_REALTIME
+            value: "True"
+          - name: DILADELE_CLOUDPROXY_REPORTS_DELAY
+            value: "15" # runs every 15 seconds        
+          volumeMounts:
+          - name: cloud-proxy-ui-volume
+            mountPath: /opt/cloud-proxy/var
+
+        # history container
+        - name: history
+          image: "{{ .Values.image.repository }}/{{.Chart.Name}}-{{.Chart.AppVersion}}:reports"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+          - name: DILADELE_CLOUDPROXY_REPORTS_DELAY
+            value: "3600" # runs every 3600 seconds / 1 hour
+          volumeMounts:
+          - name: cloud-proxy-ui-volume
+            mountPath: /opt/cloud-proxy/var
+
+      initContainers:      
+      - name: init
+        image: "{{ .Values.image.repository }}/{{.Chart.Name}}-{{.Chart.AppVersion}}:uiinit"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        volumeMounts:
+        - name: cloud-proxy-ui-volume
+          mountPath: /opt/cloud-proxy/var
+
+      volumes:
+        - name: cloud-proxy-ui-volume
+          persistentVolumeClaim:
+            claimName: {{ include "cloud-proxy.fullname" . }}-pvc
+
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}
