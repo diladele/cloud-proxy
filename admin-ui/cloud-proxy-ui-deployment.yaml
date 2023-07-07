@@ -23,6 +23,8 @@ spec:
         app: cloud-proxy-ui
     
     spec:
+
+      serviceAccountName: cloud-proxy-ui
       
       containers:
 
