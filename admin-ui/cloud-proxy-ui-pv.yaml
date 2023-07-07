@@ -9,6 +9,6 @@ spec:
     - ReadWriteOnce
   persistentVolumeReclaimPolicy: Retain
   nfs:
-    server: k8s-lb70.diladele.lan
+    server: 192.168.10.10
     path: /data/cloud-proxy-ui
     readOnly: no
