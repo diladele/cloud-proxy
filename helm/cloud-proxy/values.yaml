@@ -2,6 +2,8 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
+clusterType:
+
 replicaCount: 1
 
 image:
@@ -15,7 +17,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 serviceAccount:
-  # Specifies whether a service account should be created
+  # the service account must be created, so do NOT change this value
   create: true
   # Annotations to add to the service account
   annotations: {}
@@ -39,6 +41,11 @@ securityContext: {}
 service:
   type: LoadBalancer
   port: 80
+  # set to true to restrict the incoming connections to the Admin UI by your public IP
+  restrictSourceRanges: true
+  sourceRanges: [
+    "82.172.135.168/32"
+  ]
 
 ingress:
   enabled: false

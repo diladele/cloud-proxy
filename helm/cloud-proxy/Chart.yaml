@@ -1,6 +1,6 @@
 apiVersion: v2
 name: cloud-proxy
-description: Cloud Proxy for Managed Service Providers deployed in Kubernetes
+description: Cloud Proxy for MSP deployed in Kubernetes
 
 # A chart can be either an 'application' or a 'library' chart.
 #

@@ -13,6 +13,10 @@ spec:
       name: http
   selector:
     {{- include "cloud-proxy.selectorLabels" . | nindent 4 }}
+  {{- if .Values.service.restrictSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- .Values.service.sourceRanges | toYaml | nindent 4 }}
+  {{- end }}
 ---
 apiVersion: v1
 kind: Service
