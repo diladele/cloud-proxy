@@ -23,12 +23,14 @@ spec:
         app: cloud-proxy-ui
     
     spec:
+
+      serviceAccountName: cloud-proxy-ui
       
       containers:
 
       # nginx container
       - name: nginx
-        image: diladele/cloud-proxy-5.1:nginx
+        image: diladele/cloud-proxy-5.2:nginx
         imagePullPolicy: Always
         env:
         - name: DILADELE_WEBSAFETY_HISTORY_DELAY_NOT_USED
@@ -36,7 +38,7 @@ spec:
       
       # ui container
       - name: ui
-        image: diladele/cloud-proxy-5.1:ui
+        image: diladele/cloud-proxy-5.2:ui
         imagePullPolicy: Always
         ports:
         - containerPort: 8000
@@ -65,7 +67,7 @@ spec:
 
       # logd rsync server container
       - name: logd
-        image: diladele/cloud-proxy-5.1:logd
+        image: diladele/cloud-proxy-5.2:logd
         imagePullPolicy: Always
         ports:
         - containerPort: 873
@@ -88,7 +90,7 @@ spec:
 
       # realtime container
       - name: realtime
-        image: diladele/cloud-proxy-5.1:reports
+        image: diladele/cloud-proxy-5.2:reports
         imagePullPolicy: Always
         env:
         - name: DILADELE_CLOUDPROXY_REPORTS_REALTIME
@@ -101,7 +103,7 @@ spec:
 
       # history container
       - name: history
-        image: diladele/cloud-proxy-5.1:reports
+        image: diladele/cloud-proxy-5.2:reports
         imagePullPolicy: Always
         env:
         - name: DILADELE_CLOUDPROXY_REPORTS_DELAY
@@ -112,7 +114,7 @@ spec:
 
       initContainers:      
       - name: init
-        image: diladele/cloud-proxy-5.1:uiinit
+        image: diladele/cloud-proxy-5.2:uiinit
         imagePullPolicy: Always
         volumeMounts:
         - name: cloud-proxy-ui-volume
